@@ -1,4 +1,4 @@
-scoreboard objectives add randomint dummy
+execute unless block 30 -62 -728 minecraft:oak_planks run return 0
 execute store result score @s randomint run random value 1..3
 execute if score @s randomint matches 1 run tellraw @a "Wow, that was funny!"
 execute if score @s randomint matches 2 run tellraw @a "PWAHAHAHAHAHAHA"
