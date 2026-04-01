@@ -15,17 +15,28 @@ jobs:
         uses: actions/checkout@v4
   
       # 2️⃣ Zip each datapack folder
-      - name: Zip all datapacks (contents at archive root)
+      - name: Prepare datapacks (zip folders, keep existing zips)
         run: |
           mkdir -p zipped
           shopt -s nullglob
+
+          # Copy pre-zipped datapacks directly
+          for file in ./datapacks/*.zip; do
+            [ -f "$file" ] || continue
+            name="$(basename "$file")"
+            echo "Copying existing zip $name..."
+            cp "$file" "./zipped/$name"
+          done
+
+          # Zip each datapack folder
           for dir in ./datapacks/*/; do
             [ -d "$dir" ] || continue
             name="$(basename "$dir")"
             echo "Zipping $name..."
             ( cd "$dir" && zip -r -9 -q "../../zipped/${name}.zip" . )
           done
-          echo "✅ All datapacks zipped into ./zipped/"
+
+          echo "✅ All datapacks prepared into ./zipped/"
           ls -lh zipped
           # Optional: sanity check one archive's structure
           # unzip -l "zipped/${name}.zip" | sed -n '1,20p'
@@ -38,5 +49,5 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: 2022
-          uploads: ./zipped/ => /hahaeveryonehere/datapacks/
+          uploads: ./zipped/ => /Forsaken/datapacks/
           delete: true
