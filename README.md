@@ -1,0 +1,2 @@
+# newdevproejct
+stevelocks.kinetic.host
