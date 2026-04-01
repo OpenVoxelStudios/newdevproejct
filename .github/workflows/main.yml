@@ -1,0 +1,42 @@
+name: Deploy to Minecraft Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  sftp-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1️⃣ Get your files
+      - name: Checkout repository
+        uses: actions/checkout@v4
+  
+      # 2️⃣ Zip each datapack folder
+      - name: Zip all datapacks (contents at archive root)
+        run: |
+          mkdir -p zipped
+          shopt -s nullglob
+          for dir in ./datapacks/*/; do
+            [ -d "$dir" ] || continue
+            name="$(basename "$dir")"
+            echo "Zipping $name..."
+            ( cd "$dir" && zip -r -9 -q "../../zipped/${name}.zip" . )
+          done
+          echo "✅ All datapacks zipped into ./zipped/"
+          ls -lh zipped
+          # Optional: sanity check one archive's structure
+          # unzip -l "zipped/${name}.zip" | sed -n '1,20p'
+      
+      # 3️⃣ Upload zipped datapacks via SFTP
+      - name: SFTP Upload Datapacks
+        uses: Dylan700/sftp-upload-action@v1.2.3
+        with:
+          server: usw-ca-p35-a2-s.kineticpanel.net
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 2022
+          uploads: ./zipped/ => /hahaeveryonehere/datapacks/
+          delete: true
